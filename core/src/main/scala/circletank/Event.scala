@@ -5,7 +5,7 @@ sealed trait Event {
 }
 
 object Event {
-  case class Tick(elapsedMillis: Int) extends Event {
+  case object Tick extends Event {
     val name = "tick"
   }
   case class Input(inputType: InputType) extends Event {

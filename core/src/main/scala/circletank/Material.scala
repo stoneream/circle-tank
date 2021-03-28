@@ -1,9 +1,6 @@
 package circletank
 
-case class Vector2(x: Int, y: Int) {
-  def add(x: Int, y: Int) = this.copy(this.x + x, this.y + y)
-  def add(that: Vector2) = this.copy(this.x + that.x, this.y + that.y)
-}
+case class Vector2(x: Int, y: Int) {}
 object Vector2 {
   def zero = Vector2(0, 0)
 }

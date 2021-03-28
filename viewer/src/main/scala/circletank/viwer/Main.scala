@@ -1,27 +1,26 @@
 package circletank.viwer
 
-import circletank.{ AbstractUI, InputType }
+import circletank.{ Game, InputType, Setting }
 
 import java.awt.event.ActionEvent
 import javax.swing.{ AbstractAction, Timer }
 import scala.swing.event.{ Key, KeyPressed }
-import scala.swing.{ Color, Dimension, Font, Frame, Graphics2D, MainFrame, Panel, Rectangle, SimpleSwingApplication }
+import scala.swing.{ Color, Dimension, Font, Frame, Graphics2D, MainFrame, Panel, SimpleSwingApplication }
 
 object Main extends SimpleSwingApplication {
-  // window size
+  val worldSize = (64, 64)
+  val scale = 6
+  val gridSize = scale * 4 // 戦車半径 4
+
   val margin = 10
   val windowWidth = 1368
   val windowHeight = 1368
-  val yGridMargin = (24 to windowHeight by 24)
-  val xGridMargin = (24 to windowWidth by 24)
 
-  // colors
-  val textColor = new Color(0, 184, 148)
-  val backgroundColor = new Color(223, 230, 233)
-  val tankColor = new Color(214, 48, 49)
-  val gridColor = new Color(178, 190, 195)
+  val yGridMargin = (gridSize to windowHeight by gridSize)
+  val xGridMargin = (gridSize to windowWidth by gridSize)
 
-  val game = new AbstractUI
+  val gameSetting = Setting(worldSize = worldSize, maxFps = 60)
+  val game = Game(gameSetting)
 
   override def top: Frame = {
     new MainFrame {
@@ -37,7 +36,7 @@ object Main extends SimpleSwingApplication {
       case (_, tank) =>
         // draw debug text
         val text = s"${tank.position}, ${tank.velocity}"
-        g setColor textColor
+        g setColor Colors.textColor
         g setFont Font("Arial", Font.Bold, 18)
         g drawString (text, 0, 18)
 
@@ -55,9 +54,8 @@ object Main extends SimpleSwingApplication {
         val width = tank.radius
         val height = tank.radius
 
-        g setColor tankColor
-        //        g drawOval (x * 6, y * 6, width * 6, height * 6)
-        g fillOval (x * 6, y * 6, width * 6, height * 6)
+        g setColor Colors.tankColor
+        g fillOval (x * scale, y * scale, width * scale, height * scale)
     }
   }
 
@@ -80,34 +78,33 @@ object Main extends SimpleSwingApplication {
       }
     }
 
-    override def paint(g: Graphics2D) = {
-      g setColor backgroundColor
+    private def drawBackground(g: Graphics2D) = {
+      g setColor Colors.backgroundColor
       g fillRect (0, 0, size.width, size.height)
+    }
 
-      g setColor gridColor
+    private def drawGrid(g: Graphics2D) = {
+      g setColor Colors.gridColor
       yGridMargin.foreach { y =>
         g drawLine (0, y, windowWidth, y)
       }
       xGridMargin.foreach { x =>
         g drawLine (x, 0, x, windowHeight)
       }
+    }
 
+    override def paint(g: Graphics2D) = {
+      drawBackground(g)
+      drawGrid(g)
       onPaint(g)
     }
 
-    val timer = new Timer(game.cycleDuration, new AbstractAction() {
+    val timer = new Timer(gameSetting.cycleDuration, new AbstractAction() {
       override def actionPerformed(e: ActionEvent): Unit = {
         repaint
       }
     })
 
     timer.start()
-  }
-
-  override def shutdown(): Unit = {
-    mainPanel.timer.stop
-    game.terminate
-    println("stopped")
-    super.shutdown()
   }
 }
