@@ -3,7 +3,7 @@ package circletank
 // 1p とりあえず洗車を動かすことだけを考える
 object GameLogic {
   def init: World = {
-    val tanks = Map("tank1" -> Tank())
+    val tanks = Map("tank1" -> Tank(position = Position(4, 4)))
     World(tanks = tanks)
   }
 
@@ -13,31 +13,26 @@ object GameLogic {
       case (key, tank) =>
         val pos = tank.position
         val vel = tank.velocity
-        val acc = tank.acceleration
 
-        val newX = pos.x + (vel.x * acc.x * elapsedMillis)
-        val newY = pos.y + (vel.y * acc.y * elapsedMillis)
+        val newX = pos.x + vel.x
+        val newY = pos.y + vel.y
 
-        val fixedNewX = newX match {
-          case x if x < 0 => 0
-          case x if x > world.size._1 => world.size._1
-          case x => x
+        val (fixedNewX, fixedVelX) = newX match {
+          case x if x - tank.radius <= 0 - tank.radius => (tank.radius, 0)
+          case x if x + tank.radius > world.size._1 => (world.size._1 - tank.radius, 0)
+          case x => (x, vel.x)
         }
 
-        val fixedNewY = newY match {
-          case y if y < 0 => 0
-          case y if y > world.size._2 => world.size._2
-          case y => y
+        val (fixedNewY, fixedVelY) = newY match {
+          case y if y - tank.radius <= 0 - tank.radius => (tank.radius, 0)
+          case y if y + tank.radius > world.size._2 => (world.size._2 - tank.radius, 0)
+          case y => (y, vel.y)
         }
 
         val newPos = Position(fixedNewX, fixedNewY)
+        val newVel = Vector2(fixedVelX, fixedVelY)
 
-        println(s"$pos , $vel")
-
-        // 動かした後に止める
-        //        val newTank = TankLogic.toZero(tank).copy(position = newPos)
-
-        (key, tank.copy(position = newPos))
+        (key, tank.copy(position = newPos, velocity = newVel))
     }
 
     world.copy(tanks = newTanks)
@@ -50,10 +45,11 @@ object GameLogic {
     val newTanks = world.tanks.map {
       case (key, tank) =>
         val newTank = inputType match {
-          case Up => TankLogic.addVelocity(tank, Vector2(0, 0.02))
-          case Down => TankLogic.addVelocity(tank, Vector2(0, -0.02))
-          case Right => TankLogic.addVelocity(tank, Vector2(0.02, 0))
-          case Left => TankLogic.addVelocity(tank, Vector2(-0.02, 0))
+          case Up => TankLogic.addVelocity(tank, Vector2(0, 1))
+          case Down => TankLogic.addVelocity(tank, Vector2(0, -1))
+          case Right => TankLogic.addVelocity(tank, Vector2(1, 0))
+          case Left => TankLogic.addVelocity(tank, Vector2(-1, 0))
+          case Stop => tank.copy(velocity = Vector2.zero)
         }
         (key, newTank)
     }

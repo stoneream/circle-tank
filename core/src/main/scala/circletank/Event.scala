@@ -29,4 +29,7 @@ object InputType {
   final case object Down extends InputType {
     val name = "down"
   }
+  final case object Stop extends InputType {
+    val name = "stop"
+  }
 }

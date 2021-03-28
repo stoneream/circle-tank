@@ -38,7 +38,7 @@ class AbstractUI {
   private val system = ActorSystem(StateActor(), "circle-tank-system")
   private val scheduler = system.scheduler
   private val timeout = akka.util.Timeout(5.seconds)
-  val maxFps = 120
+  val maxFps = 30
   val cycleDuration = 1000 / maxFps
 
   scheduler.scheduleAtFixedRate(0.milli, cycleDuration.millis) {
